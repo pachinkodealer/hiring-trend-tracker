@@ -1,7 +1,9 @@
+import json
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 from collections import Counter
+from datetime import timedelta
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -187,11 +189,45 @@ with tab1:
         for i, (country, flag) in enumerate(COUNTRY_FLAGS.items()):
             count = country_counts.get(country, 0)
             cols[i].metric(f"{flag} {country}", f"{count:,}")
-        st.caption(
-            f"Postings by country above sum to **{country_total:,}** — matching the total above. "
-            f"Numbers reflect a live snapshot from Adzuna's API at the time of the last refresh. "
-            f"Job postings are added and removed daily, so counts will shift each time you hit Refresh."
-        )
+        # Rotating timezone ticker
+        tz_data = [
+            ("🌐", "UTC",          0,    "UTC"),
+            ("🇺🇸", "New York",   -4,    "EDT"),
+            ("🇺🇸", "Los Angeles",-7,    "PDT"),
+            ("🇬🇧", "London",      1,    "BST"),
+            ("🇮🇳", "Mumbai",      5.5,  "IST"),
+            ("🇸🇬", "Singapore",   8,    "SGT"),
+            ("🇦🇺", "Sydney",     10,    "AEST"),
+            ("🇨🇦", "Toronto",    -4,    "EDT"),
+        ]
+        tz_entries = [
+            f"{flag} {city} · {(last_collected + timedelta(hours=offset)).strftime('%b %d, %I:%M %p')} {tz_name}"
+            for flag, city, offset, tz_name in tz_data
+        ]
+        tz_json = json.dumps(tz_entries)
+        st.markdown(f"""
+<div style="display:flex;align-items:center;gap:10px;margin:6px 0 2px 0;">
+  <span style="font-size:11px;color:#9CA3AF;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;">Last refreshed</span>
+  <span id="tz-rotating" style="font-size:12px;color:#374151;font-weight:500;opacity:1;transition:opacity 0.3s ease;"></span>
+</div>
+<script>
+(function() {{
+  const entries = {tz_json};
+  let idx = 0;
+  const el = document.getElementById('tz-rotating');
+  function tick() {{
+    el.style.opacity = '0';
+    setTimeout(function() {{
+      el.textContent = entries[idx];
+      el.style.opacity = '1';
+      idx = (idx + 1) % entries.length;
+    }}, 300);
+  }}
+  tick();
+  setInterval(tick, 2200);
+}})();
+</script>
+""", unsafe_allow_html=True)
 
     st.divider()
 
