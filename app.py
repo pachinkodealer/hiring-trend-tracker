@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit.components.v1 as components
 from collections import Counter
 from datetime import timedelta
 
@@ -191,43 +192,49 @@ with tab1:
             cols[i].metric(f"{flag} {country}", f"{count:,}")
         # Rotating timezone ticker
         tz_data = [
-            ("🌐", "UTC",          0,    "UTC"),
-            ("🇺🇸", "New York",   -4,    "EDT"),
-            ("🇺🇸", "Los Angeles",-7,    "PDT"),
-            ("🇬🇧", "London",      1,    "BST"),
-            ("🇮🇳", "Mumbai",      5.5,  "IST"),
-            ("🇸🇬", "Singapore",   8,    "SGT"),
-            ("🇦🇺", "Sydney",     10,    "AEST"),
-            ("🇨🇦", "Toronto",    -4,    "EDT"),
+            ("🌐", "UTC",         0,    "UTC"),
+            ("🗽", "New York",   -4,    "EDT"),
+            ("🎬", "Los Angeles",-7,    "PDT"),
+            ("👑", "London",      1,    "BST"),
+            ("🕌", "Mumbai",      5.5,  "IST"),
+            ("🦁", "Singapore",   8,    "SGT"),
+            ("🦘", "Sydney",     10,    "AEST"),
+            ("🍁", "Toronto",    -4,    "EDT"),
         ]
         tz_entries = [
-            f"{flag} {city} · {(last_collected + timedelta(hours=offset)).strftime('%b %d, %I:%M %p')} {tz_name}"
-            for flag, city, offset, tz_name in tz_data
+            f"{icon} {city} &nbsp;·&nbsp; {(last_collected + timedelta(hours=offset)).strftime('%b %d, %I:%M %p')} {tz_name}"
+            for icon, city, offset, tz_name in tz_data
         ]
         tz_json = json.dumps(tz_entries)
-        st.markdown(f"""
-<div style="display:flex;align-items:center;gap:10px;margin:6px 0 2px 0;">
-  <span style="font-size:11px;color:#9CA3AF;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;">Last refreshed</span>
-  <span id="tz-rotating" style="font-size:12px;color:#374151;font-weight:500;opacity:1;transition:opacity 0.3s ease;"></span>
+        components.html(f"""
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+            display:flex;align-items:center;gap:10px;padding:4px 0;">
+  <span style="font-size:10px;color:#9CA3AF;letter-spacing:0.08em;
+               text-transform:uppercase;font-weight:600;white-space:nowrap;">
+    Last refreshed
+  </span>
+  <span id="tz-val" style="font-size:12px;color:#374151;font-weight:500;
+                            opacity:1;transition:opacity 0.35s ease;">
+  </span>
 </div>
 <script>
 (function() {{
-  const entries = {tz_json};
-  let idx = 0;
-  const el = document.getElementById('tz-rotating');
+  var entries = {tz_json};
+  var idx = 0;
+  var el = document.getElementById('tz-val');
   function tick() {{
     el.style.opacity = '0';
     setTimeout(function() {{
-      el.textContent = entries[idx];
+      el.innerHTML = entries[idx];
       el.style.opacity = '1';
       idx = (idx + 1) % entries.length;
-    }}, 300);
+    }}, 350);
   }}
   tick();
-  setInterval(tick, 2200);
+  setInterval(tick, 2300);
 }})();
 </script>
-""", unsafe_allow_html=True)
+""", height=36)
 
     st.divider()
 
