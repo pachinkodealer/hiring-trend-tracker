@@ -182,10 +182,16 @@ with tab1:
             "Singapore": "🇸🇬",
         }
         country_counts = filtered["country"].value_counts()
+        country_total = country_counts.sum()
         cols = st.columns(len(COUNTRY_FLAGS))
         for i, (country, flag) in enumerate(COUNTRY_FLAGS.items()):
             count = country_counts.get(country, 0)
             cols[i].metric(f"{flag} {country}", f"{count:,}")
+        st.caption(
+            f"Postings by country above sum to **{country_total:,}** — matching the total above. "
+            f"Numbers reflect a live snapshot from Adzuna's API at the time of the last refresh. "
+            f"Job postings are added and removed daily, so counts will shift each time you hit Refresh."
+        )
 
     st.divider()
 
