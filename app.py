@@ -144,6 +144,10 @@ with tab1:
 
     # Sidebar filters
     st.sidebar.title("Hiring Filters")
+    all_countries = sorted(jobs_df["country"].dropna().unique()) if "country" in jobs_df.columns else []
+    selected_countries = st.sidebar.multiselect(
+        "Country", options=all_countries, default=all_countries
+    )
     all_categories = sorted(jobs_df["category"].dropna().unique())
     selected_categories = st.sidebar.multiselect(
         "Industry Category", options=all_categories, default=all_categories
@@ -157,6 +161,8 @@ with tab1:
         jobs_df["category"].isin(selected_categories) &
         jobs_df["search_term"].isin(selected_titles)
     ]
+    if selected_countries and "country" in jobs_df.columns:
+        filtered = filtered[filtered["country"].isin(selected_countries)]
 
     # KPIs
     k1, k2, k3, k4 = st.columns(4)
@@ -217,20 +223,20 @@ with tab1:
     fig5.update_layout(coloraxis_showscale=False, xaxis_tickangle=-30)
     st.plotly_chart(fig5, use_container_width=True, key="fig_companies")
 
-    # Row 4
-    st.subheader("Hiring by State")
-    state_df = filtered["state"].value_counts().reset_index()
-    state_df.columns = ["State", "Postings"]
-    state_df = state_df[state_df["State"].notna()]
-    if not state_df.empty:
+    # Row 4 — Global hiring map
+    st.subheader("Hiring by Country")
+    if "country" in filtered.columns:
+        country_hire_df = filtered["country"].value_counts().reset_index()
+        country_hire_df.columns = ["Country", "Postings"]
         fig6 = px.choropleth(
-            state_df, locations="State", locationmode="USA-states",
-            color="Postings", scope="usa", color_continuous_scale="Blues",
+            country_hire_df, locations="Country", locationmode="country names",
+            color="Postings", color_continuous_scale="Blues",
             labels={"Postings": "Job Postings"},
         )
+        fig6.update_layout(geo=dict(showframe=False, showcoastlines=True))
         st.plotly_chart(fig6, use_container_width=True, key="fig_state_map")
     else:
-        st.info("Not enough state data to render map.")
+        st.info("Run the collector to get global data.")
 
     st.divider()
     st.caption("Built by Ian Lee · Data sourced from Adzuna Jobs API (adzuna.com) · Covers Finance & IT categories · Updated on demand")
@@ -367,10 +373,11 @@ with tab3:
 
     st.subheader("📌 What the Data is Saying Right Now")
     i1, i2, i3, i4 = st.columns(4)
+    countries_tracked = jobs_df["country"].nunique() if "country" in jobs_df.columns else 1
     i1.metric("Active Job Postings", f"{total_postings:,}", help="From Adzuna API")
     i2.metric("Total Layoffs (All Time)", f"{total_layoffs:,}", help="From layoffs.fyi")
     i3.metric("Most In-Demand Role", top_hiring_role.title())
-    i4.metric("Hardest Hit Industry", top_hit_industry)
+    i4.metric("Countries Tracked", f"{countries_tracked}")
 
     # Plain English insight
     recent_layoffs = layoff_df[layoff_df["date"] >= layoff_df["date"].max() - pd.DateOffset(months=6)]
