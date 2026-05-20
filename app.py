@@ -5,7 +5,7 @@ from collections import Counter
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="US Job Market Intelligence",
+    page_title="Global Job Market Intelligence",
     page_icon="📊",
     layout="wide",
 )
@@ -121,12 +121,12 @@ tab1, tab2, tab3 = st.tabs(["📈 Hiring Trends", "📉 Layoff Tracker", "🔍 M
 # TAB 1 — HIRING TRENDS
 # ═══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    st.title("📈 US Data & Analytics Hiring Trends")
-    st.caption("Tracking Data Analyst, Data Scientist, BI & ML roles across Finance and Tech")
+    st.title("📈 Global Data & Analytics Hiring Trends")
+    st.caption("Tracking Data Analyst, Data Scientist, BI & ML roles across Finance and Tech in 6 countries")
     last_collected = pd.to_datetime(jobs_df["collected_at"]).max()
     info_col, btn_col = st.columns([5, 1])
     with info_col:
-        st.info(f"📡 **Data Source:** [Adzuna Jobs API](https://www.adzuna.com) · Live job postings aggregated across Finance and IT categories in the United States · **Last refreshed: {last_collected.strftime('%B %d, %Y at %I:%M %p')}**", icon=None)
+        st.info(f"📡 **Data Source:** [Adzuna Jobs API](https://www.adzuna.com) · Live job postings aggregated across Finance and IT categories in 6 countries (US, UK, Canada, Australia, India, Singapore) · **Last refreshed: {last_collected.strftime('%B %d, %Y at %I:%M %p')}**", icon=None)
     with btn_col:
         if st.button("🔄 Refresh Data", use_container_width=True):
             import subprocess, sys
@@ -239,7 +239,7 @@ with tab1:
         st.info("Run the collector to get global data.")
 
     st.divider()
-    st.caption("Built by Ian Lee · Data sourced from Adzuna Jobs API (adzuna.com) · Covers Finance & IT categories · Updated on demand")
+    st.caption("Built by Ian Lee · Data sourced from Adzuna Jobs API (adzuna.com) · Covers Finance & IT categories across US, UK, Canada, Australia, India & Singapore · Updated on demand")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
