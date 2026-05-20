@@ -126,7 +126,7 @@ with tab1:
     last_collected = pd.to_datetime(jobs_df["collected_at"]).max()
     info_col, btn_col = st.columns([5, 1])
     with info_col:
-        st.info(f"📡 **Data Source:** [Adzuna Jobs API](https://www.adzuna.com) · Live job postings aggregated across Finance and IT categories in 6 countries (US, UK, Canada, Australia, India, Singapore) · **Last refreshed: {last_collected.strftime('%B %d, %Y at %I:%M %p')}**", icon=None)
+        st.info(f"📡 **Data Source:** [Adzuna Jobs API](https://www.adzuna.com) · Live job postings aggregated across Finance and IT categories in 6 countries (US, UK, Canada, Australia, India, Singapore) · **Last refreshed: {last_collected.strftime('%B %d, %Y at %I:%M %p UTC')}**", icon=None)
     with btn_col:
         if st.button("🔄 Refresh Data", use_container_width=True):
             import subprocess, sys
