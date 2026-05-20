@@ -166,10 +166,27 @@ with tab1:
 
     # KPIs
     k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Total Postings", f"{len(filtered):,}")
+    k1.metric("Total Postings", f"{len(filtered):,}", help="Live snapshot from Adzuna API — updates with each refresh")
     k2.metric("Unique Companies", f"{filtered['company'].nunique():,}")
     k3.metric("Avg Salary", f"${filtered['salary_avg'].mean():,.0f}" if filtered["salary_avg"].notna().any() else "N/A")
     k4.metric("Roles Tracked", filtered["search_term"].nunique())
+
+    # Country breakdown row
+    if "country" in filtered.columns:
+        COUNTRY_FLAGS = {
+            "United States": "🇺🇸",
+            "United Kingdom": "🇬🇧",
+            "Canada": "🇨🇦",
+            "Australia": "🇦🇺",
+            "India": "🇮🇳",
+            "Singapore": "🇸🇬",
+        }
+        country_counts = filtered["country"].value_counts()
+        cols = st.columns(len(COUNTRY_FLAGS))
+        for i, (country, flag) in enumerate(COUNTRY_FLAGS.items()):
+            count = country_counts.get(country, 0)
+            cols[i].metric(f"{flag} {country}", f"{count:,}")
+
     st.divider()
 
     # Row 1
