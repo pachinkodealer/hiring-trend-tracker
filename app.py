@@ -270,12 +270,27 @@ with tab1:
 
     with c4:
         st.subheader("Salary Distribution")
-        salary_df = filtered[filtered["salary_avg"].notna() & (filtered["salary_avg"] > 20000)]
+        st.caption("US postings only · Local currency · Outliers removed")
+        salary_df = filtered[
+            (filtered["country"] == "United States") &
+            filtered["salary_avg"].notna() &
+            (filtered["salary_avg"] > 20000)
+        ] if "country" in filtered.columns else filtered[
+            filtered["salary_avg"].notna() & (filtered["salary_avg"] > 20000)
+        ]
         if not salary_df.empty:
-            fig4 = px.histogram(salary_df, x="salary_avg", nbins=30,
+            # Remove outliers: cap at 99th percentile
+            cap = salary_df["salary_avg"].quantile(0.99)
+            salary_df = salary_df[salary_df["salary_avg"] <= cap]
+            fig4 = px.histogram(salary_df, x="salary_avg", nbins=40,
                                 color_discrete_sequence=["#1D4ED8"],
-                                labels={"salary_avg": "Avg Salary ($)"})
-            fig4.update_layout(bargap=0.1)
+                                labels={"salary_avg": "Avg Salary (USD)"},
+                                )
+            fig4.update_layout(
+                bargap=0.05,
+                xaxis_tickprefix="$",
+                xaxis_tickformat=",.0f",
+            )
             st.plotly_chart(fig4, use_container_width=True, key="fig_salary")
         else:
             st.info("Not enough salary data for selected filters.")
