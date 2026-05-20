@@ -100,6 +100,20 @@ def extract_skills(descriptions):
                 counts[skill] += 1
     return counts
 
+# ── Custom CSS ────────────────────────────────────────────────────────────────
+st.markdown("""
+<style>
+/* Hiring Filters section - blue tags */
+[data-testid="stSidebar"] .stMultiSelect:nth-of-type(1) span[data-baseweb="tag"],
+[data-testid="stSidebar"] .stMultiSelect:nth-of-type(2) span[data-baseweb="tag"] {
+    background-color: #1D4ED8 !important;
+    color: white !important;
+}
+/* Refresh button styling */
+[data-testid="stSidebar"] { border-right: 1px solid #e5e7eb; }
+</style>
+""", unsafe_allow_html=True)
+
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3 = st.tabs(["📈 Hiring Trends", "📉 Layoff Tracker", "🔍 Market Overview"])
 
