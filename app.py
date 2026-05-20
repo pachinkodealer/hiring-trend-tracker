@@ -110,7 +110,23 @@ with tab1:
     st.title("📈 US Data & Analytics Hiring Trends")
     st.caption("Tracking Data Analyst, Data Scientist, BI & ML roles across Finance and Tech")
     last_collected = pd.to_datetime(jobs_df["collected_at"]).max()
-    st.info(f"📡 **Data Source:** [Adzuna Jobs API](https://www.adzuna.com) · Live job postings aggregated across Finance and IT categories in the United States · **Last refreshed: {last_collected.strftime('%B %d, %Y at %I:%M %p')}**", icon=None)
+    info_col, btn_col = st.columns([5, 1])
+    with info_col:
+        st.info(f"📡 **Data Source:** [Adzuna Jobs API](https://www.adzuna.com) · Live job postings aggregated across Finance and IT categories in the United States · **Last refreshed: {last_collected.strftime('%B %d, %Y at %I:%M %p')}**", icon=None)
+    with btn_col:
+        if st.button("🔄 Refresh Data", use_container_width=True):
+            import subprocess, sys
+            with st.spinner("Fetching latest job postings..."):
+                result = subprocess.run(
+                    [sys.executable, "data_collector.py"],
+                    capture_output=True, text=True
+                )
+            if result.returncode == 0:
+                st.cache_data.clear()
+                st.success("Data refreshed!")
+                st.rerun()
+            else:
+                st.error("Refresh failed. Check API credentials.")
 
     # Sidebar filters
     st.sidebar.title("Hiring Filters")
@@ -145,7 +161,7 @@ with tab1:
         fig = px.bar(role_counts, x="Postings", y="Role", orientation="h",
                      color="Postings", color_continuous_scale="Blues")
         fig.update_layout(showlegend=False, coloraxis_showscale=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key="fig_roles_bar")
 
     with c2:
         st.subheader("Postings by Industry")
@@ -153,7 +169,7 @@ with tab1:
         cat_counts.columns = ["Category", "Postings"]
         fig2 = px.pie(cat_counts, names="Category", values="Postings",
                       color_discrete_sequence=px.colors.sequential.Blues_r)
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, use_container_width=True, key="fig_industry_pie")
 
     # Row 2
     c3, c4 = st.columns(2)
@@ -164,7 +180,7 @@ with tab1:
         fig3 = px.bar(skill_df, x="Mentions", y="Skill", orientation="h",
                       color="Mentions", color_continuous_scale="Teal")
         fig3.update_layout(showlegend=False, coloraxis_showscale=False)
-        st.plotly_chart(fig3, use_container_width=True)
+        st.plotly_chart(fig3, use_container_width=True, key="fig_skills")
 
     with c4:
         st.subheader("Salary Distribution")
@@ -174,7 +190,7 @@ with tab1:
                                 color_discrete_sequence=["#1D4ED8"],
                                 labels={"salary_avg": "Avg Salary ($)"})
             fig4.update_layout(bargap=0.1)
-            st.plotly_chart(fig4, use_container_width=True)
+            st.plotly_chart(fig4, use_container_width=True, key="fig_salary")
         else:
             st.info("Not enough salary data for selected filters.")
 
@@ -185,7 +201,7 @@ with tab1:
     fig5 = px.bar(top_companies, x="Company", y="Postings",
                   color="Postings", color_continuous_scale="Blues")
     fig5.update_layout(coloraxis_showscale=False, xaxis_tickangle=-30)
-    st.plotly_chart(fig5, use_container_width=True)
+    st.plotly_chart(fig5, use_container_width=True, key="fig_companies")
 
     # Row 4
     st.subheader("Hiring by State")
@@ -198,7 +214,7 @@ with tab1:
             color="Postings", scope="usa", color_continuous_scale="Blues",
             labels={"Postings": "Job Postings"},
         )
-        st.plotly_chart(fig6, use_container_width=True)
+        st.plotly_chart(fig6, use_container_width=True, key="fig_state_map")
     else:
         st.info("Not enough state data to render map.")
 
@@ -254,7 +270,7 @@ with tab2:
                            markers=True, color_discrete_sequence=["#DC2626"],
                            labels={"month": "Month", "total_laid_off": "Total Laid Off"})
         fig_time.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(fig_time, use_container_width=True)
+        st.plotly_chart(fig_time, use_container_width=True, key="fig_layoff_time")
 
     with r2:
         st.subheader("Layoffs by Industry")
@@ -268,7 +284,7 @@ with tab2:
         fig_ind = px.bar(ind_df, x="total_laid_off", y="industry", orientation="h",
                          color="total_laid_off", color_continuous_scale="Reds")
         fig_ind.update_layout(showlegend=False, coloraxis_showscale=False)
-        st.plotly_chart(fig_ind, use_container_width=True)
+        st.plotly_chart(fig_ind, use_container_width=True, key="fig_layoff_ind")
 
     # Row 2 — Top companies + Layoffs by stage
     r3, r4 = st.columns(2)
@@ -285,7 +301,7 @@ with tab2:
                         color="total_laid_off", color_continuous_scale="Reds",
                         labels={"company": "Company", "total_laid_off": "Laid Off"})
         fig_co.update_layout(coloraxis_showscale=False, xaxis_tickangle=-30)
-        st.plotly_chart(fig_co, use_container_width=True)
+        st.plotly_chart(fig_co, use_container_width=True, key="fig_layoff_co")
 
     with r4:
         st.subheader("Layoffs by Company Stage")
@@ -298,7 +314,7 @@ with tab2:
         )
         fig_stage = px.pie(stage_df, names="stage", values="total_laid_off",
                            color_discrete_sequence=px.colors.sequential.Reds_r)
-        st.plotly_chart(fig_stage, use_container_width=True)
+        st.plotly_chart(fig_stage, use_container_width=True, key="fig_layoff_stage")
 
     # Row 3 — Country map
     st.subheader("Layoffs by Country")
@@ -313,7 +329,7 @@ with tab2:
         color="total_laid_off", color_continuous_scale="Reds",
         labels={"total_laid_off": "Total Laid Off"},
     )
-    st.plotly_chart(fig_map, use_container_width=True)
+    st.plotly_chart(fig_map, use_container_width=True, key="fig_layoff_map")
 
     st.divider()
     st.caption("Built by Ian Lee · Data sourced from layoffs.fyi by Roger Lee · Dataset covers 4,400+ layoff events globally · Updated periodically")
@@ -390,7 +406,7 @@ with tab3:
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         hovermode="x unified",
     )
-    st.plotly_chart(fig_overlay, use_container_width=True)
+    st.plotly_chart(fig_overlay, use_container_width=True, key="fig_overlay")
 
     st.divider()
 
@@ -404,7 +420,7 @@ with tab3:
         fig_roles = px.bar(role_df, x="Postings", y="Role", orientation="h",
                            color="Postings", color_continuous_scale="Blues")
         fig_roles.update_layout(showlegend=False, coloraxis_showscale=False)
-        st.plotly_chart(fig_roles, use_container_width=True)
+        st.plotly_chart(fig_roles, use_container_width=True, key="fig_overview_roles")
 
     with o2:
         st.subheader("🟥 Most Impacted Industries by Layoffs")
@@ -418,7 +434,7 @@ with tab3:
         fig_ind_ov = px.bar(ind_overview, x="total_laid_off", y="industry", orientation="h",
                             color="total_laid_off", color_continuous_scale="Reds")
         fig_ind_ov.update_layout(showlegend=False, coloraxis_showscale=False)
-        st.plotly_chart(fig_ind_ov, use_container_width=True)
+        st.plotly_chart(fig_ind_ov, use_container_width=True, key="fig_overview_ind")
 
     st.divider()
     st.caption("Built by Ian Lee · Adzuna Jobs API + layoffs.fyi · Combined market intelligence dashboard")
